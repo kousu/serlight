@@ -148,7 +148,7 @@ const struct modegroup* modegroup[LIGHTS] = {
 /* working memory */
 
 light_t curlight; // the current light we are processing
-                  // instead of passing the current, use a global to save
+                  // instead of passing this as a parameter, using a global saves instructions
 mode_t mode[LIGHTS]; //TODO: use a struct with bitfields to make this only one byte long, and compare if the savings from this in save()/restore() offset the extra ops everywhere else needs to access it
 uint8_t mode_step[LIGHTS];
 uint16_t timer[LIGHTS];
@@ -464,25 +464,26 @@ main() {
     
     uint8_t pressed = press();
     if(pressed < PRESSED_SHORT) {
-      // short press: cycle LED1
-      curlight = LED1;
-      cycle_mode();
-      
+        // short press: cycle LED1
+        curlight = LED1;
+        cycle_mode();
     } else if(pressed < PRESSED_MEDIUM) {
-      // medium press: cycle LED2
-      curlight = LED2;
-      cycle_mode();
+        // medium press: cycle LED2
+        curlight = LED2;
+        cycle_mode();
     } else /*if(pressed < PRESSED_COLD)*/ {
-      // a cold boot: use default state
-      mode[LED1] = pgm_read_byte(&modegroup[LED1]->modes[0]);
-      mode[LED2] = pgm_read_byte(&modegroup[LED2]->modes[0]);
-      mode_step[LED1] = mode_step[LED2] = 0;
+        // a cold boot: use default state
+        // we could do goto_mode() twice, but then we're doing two save()s
+        mode[LED1] = pgm_read_byte(&modegroup[LED1]->modes[0]);
+        mode[LED2] = pgm_read_byte(&modegroup[LED2]->modes[0]);
+        mode_step[LED1] = mode_step[LED2] = 0;
+        timer[LED1] = timer[LED2] = 1;
+        save();
     }
     //TODO: test for if it's possible to boot the flashlight without. 
     //      the very first time you boot the flashlight
     //      if you somehow manage to turn it off right here before goto_mode() happens
     //      do bad things happen?
-    timer[LED1] = timer[LED2] = 1;
     
     // turn on the ISR() routine and put main() to sleep so that we only use CPU as needed.
     ISR_on();
