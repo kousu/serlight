@@ -247,8 +247,7 @@ inline void restore() {
 
 // ------------------------- hardware -----------------------------
 
-#define MS_PER_TICK 500 //this is only an estimate. the CPU varies according to how much current it's getting. see [amtel:TODO]
-
+#define MS_PER_TICK 128 //this is only an estimate. the CPU varies according to how much current it's getting. see [amtel:43]
 
 inline void ISR_on() {
     // Setup watchdog timer to only interrupt, not reset
@@ -257,7 +256,7 @@ inline void ISR_on() {
     WDTCR |= (1<<WDCE) | (1<<WDE);  // Start timed sequence
     
     // See [amtel:43] for the definition of WDTCR
-    WDTCR = (1<<WDTIE) | (1<<WDP2) | (1<<WDP0); // Enable interrupt every 500ms
+    WDTCR = (1<<WDTIE) | (1<<WDP1) | (1<<WDP0); // Enable interrupt every 128ms
     sei();                          // Enable interrupts
 }
 
